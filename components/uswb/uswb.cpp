@@ -112,26 +112,26 @@ float UltimateSpeedWallbox::get_setup_priority() const {
 }
 
 void UltimateSpeedWallbox::send() {
-  // Start of Frame      Len                 SlaveId   Func?     Q/A                 CRC16 Modbus (LE uint16)
-  // 5Ah       A5h       07h       00h       02h       02h       01h       00h       85h       E8h      
+  // Start of Frame      Len                 Address   Value       EoF
+  // 5Ah       A5h       08h       00h       AAh       000000C8h   A55Ah    
   std::vector<uint8_t> data;
   data.insert(data.begin(), START_SEQ.begin(), START_SEQ.end());
-  data.push_back(0x7);
+  data.push_back(0x8);
   data.push_back(0x0);
-  data.push_back(address_);
-  data.push_back(0x2);
-  data.push_back(0x1);
-  if (requested_current_sensor_ != nullptr && requested_current_sensor_->has_state()) {
-    float allowed = requested_current_sensor_->get_state();
-    if (max_current_number_ != nullptr && max_current_number_->has_state()) {
-      float max_allowed = max_current_number_->state;
-      allowed = max_allowed > allowed ? allowed : max_allowed;
-    }
-    // ESP_LOGD(TAG, "USWB send - allowed %.2f", allowed);
-    data.push_back(allowed);
-  } else { // initial value
-    data.push_back(0x0);
-  }
+  data.push_back(0x00AA);
+  data.push_back(0x000000C8);
+  data.push_back(0xA55A);
+//  if (requested_current_sensor_ != nullptr && requested_current_sensor_->has_state()) {
+//    float allowed = requested_current_sensor_->get_state();
+//    if (max_current_number_ != nullptr && max_current_number_->has_state()) {
+//      float max_allowed = max_current_number_->state;
+//      allowed = max_allowed > allowed ? allowed : max_allowed;
+//    }
+//    // ESP_LOGD(TAG, "USWB send - allowed %.2f", allowed);
+//    data.push_back(allowed);
+//  } else { // initial value
+//    data.push_back(0x0);
+//  }
 
   auto crc = uswb_crc16(data, false);
   data.push_back(crc >> 0);
